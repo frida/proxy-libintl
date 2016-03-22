@@ -34,6 +34,7 @@ typedef void* HMODULE;
 #include <stdlib.h>
 #include <string.h>
 
+#define G_INTL_COMPILATION
 #include "libintl.h"
 
 int _nl_msg_cat_cntr;		/* So that configury thinks it is GNU

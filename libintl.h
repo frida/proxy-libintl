@@ -26,6 +26,13 @@
 # define LC_MESSAGES 1729       /* Use same value as in GNU gettext */
 #endif
 
+/* Define this to make configure checks successfully find gettext in libintl.
+ * This will cause the AM_GNU_GETTEXT([external]) macro to successfully detect
+ * that gettext is in -lintl, not in libc, and needs #include <libintl.h> */
+#ifndef __GNU_GETTEXT_SUPPORTED_REVISION
+# define __GNU_GETTEXT_SUPPORTED_REVISION
+#endif
+
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)
 # define PROXY_LIBINTL_GNUC_FORMAT(arg_idx) __attribute__((__format_arg__(arg_idx)))
 #else

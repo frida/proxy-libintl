@@ -10,6 +10,8 @@ install_headers('libintl.h')
 intl_shr = shared_library('intl',
   'libintl.c',
   c_args: ['-DSTUB_ONLY'],
+  soversion : 8,
+  darwin_versions : ['10', '10.5'],
   install : true)
 
 intl_sta = static_library ('intl',

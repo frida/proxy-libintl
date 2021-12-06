@@ -33,7 +33,7 @@ will also get exported from the libfoo DLL. This is definitely not
 what you want. It might then lead to other DLLs higher up in the
 dependency stack to import the libintl functions from the libfoo DLL.
 
-To avoid this, use the --exluce-libs ld flag, i.e. pass
+To avoid this, use the --exclude-libs ld flag, i.e. pass
 -Wl,--exclude-libs=libintl.a in your LDFLAGS when building
 libfoo. Unfortunately there is no __declspec(nodllexport)...
 

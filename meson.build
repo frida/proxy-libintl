@@ -5,6 +5,10 @@ project('proxy-libintl', 'c',
                       'c_std=gnu99',
                       'buildtype=debugoptimized' ])
 
+if get_option('default_library') == 'static'
+  add_project_arguments('-DG_INTL_STATIC_COMPILATION', language : 'c')
+endif
+
 install_headers('libintl.h')
 
 intl_lib = library('intl',

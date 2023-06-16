@@ -236,19 +236,25 @@ setup (void)
   if (!beenhere)
     {
 #if !STUB_ONLY
-#if defined(_WIN64)
-      /* On 64-bit Windows we have let libtool choose the default name
-       * for the DLL, as we don't need the intl.dll name for backward
-       * compatibility
-       */
-      HMODULE intl_dll = LoadLibrary ("libintl-8.dll");
-#  elif defined( _WIN32)
-      HMODULE intl_dll = LoadLibrary ("intl.dll");
-#  elif defined(__APPLE__) && defined(__MACH__)
-      HMODULE intl_dll = dlopen ("libintl.dylib", RTLD_LAZY);
+# if defined(_WIN32)
+#  if !defined (_MSC_VER)
+      HMODULE intl_dll = LoadLibraryW (L"libintl-8.dll");
+#   if defined (_M_IX86)
+      /* Also try without libtool naming scheme for
+       * backward compatibility. That's only needed
+       * on x86 */
+      if (intl_dll == NULL) {
+        intl_dll = LoadLibraryW (L"intl.dll");
+      }
+#   endif
 #  else
-      HMODULE intl_dll = dlopen ("libintl.so", RTLD_LAZY);
+      HMODULE intl_dll = LoadLibraryW (L"intl.dll");
 #  endif
+# elif defined(__APPLE__) && defined(__MACH__)
+      HMODULE intl_dll = dlopen ("libintl.dylib", RTLD_LAZY);
+# else
+      HMODULE intl_dll = dlopen ("libintl.so", RTLD_LAZY);
+# endif
 #else  /* !STUB_ONLY */
       HMODULE intl_dll = NULL;
 #endif  /* STUB_ONLY */

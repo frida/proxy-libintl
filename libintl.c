@@ -74,6 +74,11 @@ static char * (*p_bindtextdomain) (const char *domainname,
 static char * (*p_bind_textdomain_codeset) (const char *domainname,
 					    const char *codeset);
 
+#ifdef _WIN32
+static wchar_t * (*p_wbindtextdomain) (const char *domainname,
+                                       const wchar_t *wdirname);
+#endif
+
 static int
 use_intl_dll (HMODULE dll)
 {
@@ -94,7 +99,10 @@ use_intl_dll (HMODULE dll)
   LOOKUP (textdomain);
   LOOKUP (bindtextdomain);
   LOOKUP (bind_textdomain_codeset);
-  
+#ifdef _WIN32
+  LOOKUP (wbindtextdomain)
+#endif
+
 #undef LOOKUP
 #endif  /* !STUB_ONLY */
   return 1;
@@ -108,6 +116,15 @@ dummy_##fn parlist				\
 {						\
   return (char *) (retval);			\
 }
+
+#ifdef _WIN32
+#define WDUMMY(fn, parlist, retval)		\
+static wchar_t *					\
+dummy_##fn parlist				\
+{						\
+  return (wchar_t *) (retval);			\
+}
+#endif
 
 DUMMY (gettext,
        (const char *msgid),
@@ -175,7 +192,18 @@ DUMMY (bind_textdomain_codeset,
 	const char *codeset),
        codeset)
 
+#ifdef _WIN32
+WDUMMY (wbindtextdomain,
+        (const char *domainname,
+         const wchar_t *dirname),
+        L"/dummy")
+#endif
+
 #undef DUMMY
+
+#ifdef _WIN32
+#undef WDUMMY
+#endif
 
 static void
 use_dummy (void)
@@ -191,7 +219,11 @@ use_dummy (void)
   USE_DUMMY (textdomain);
   USE_DUMMY (bindtextdomain);
   USE_DUMMY (bind_textdomain_codeset);
-  
+
+#ifdef _WIN32
+  USE_DUMMY (wbindtextdomain);
+#endif
+
 #undef USE_DUMMY
 
 }
@@ -249,6 +281,16 @@ g_libintl_ ## fn parlist			\
   return p_##fn parlist2;			\
 }
 
+#ifdef _WIN32
+#define WIMPLEMENT(fn, parlist, parlist2)	\
+wchar_t *					\
+g_libintl_ ## fn parlist			\
+{						\
+  setup ();					\
+  return p_##fn parlist2;			\
+}
+#endif
+
 IMPLEMENT (gettext,
 	   (const char *msgid),
 	   (msgid))
@@ -299,4 +341,15 @@ IMPLEMENT (bind_textdomain_codeset,
 	    const char *codeset),
 	   (domainname, codeset))
 
+#ifdef _WIN32
+WIMPLEMENT (wbindtextdomain,
+            (const char    *domainname,
+             const wchar_t *wdirname),
+            (domainname, wdirname))
+#endif
+
 #undef IMPLEMENT
+
+#ifdef _WIN32
+#undef WIMPLEMENT
+#endif

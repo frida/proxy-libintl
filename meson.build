@@ -1,6 +1,6 @@
 project('proxy-libintl', 'c',
   version : '1',
-  meson_version : '>= 0.46.0',
+  meson_version : '>= 0.48.0',
   default_options : [ 'warning_level=1',
                       'c_std=gnu99',
                       'buildtype=debugoptimized' ])

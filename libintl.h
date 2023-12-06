@@ -22,6 +22,10 @@
 
 #include <locale.h>
 
+#ifdef _WIN32
+#include <stddef.h> /* for wchar_t */
+#endif
+
 #ifndef LC_MESSAGES
 # define LC_MESSAGES 1729       /* Use same value as in GNU gettext */
 #endif
@@ -54,6 +58,10 @@
 #define textdomain g_libintl_textdomain
 #define bindtextdomain g_libintl_bindtextdomain
 #define bind_textdomain_codeset g_libintl_bind_textdomain_codeset
+
+#ifdef _WIN32
+#define wbindtextdomain g_libintl_wbindtextdomain
+#endif
 
 /* Define G_INTL_STATIC_COMPILATION to link statically */
 #if defined(_WIN32) && !defined(G_INTL_STATIC_COMPILATION)
@@ -102,6 +110,11 @@ G_INTL_EXPORT char *g_libintl_bindtextdomain (const char *domainname,
 
 G_INTL_EXPORT char *g_libintl_bind_textdomain_codeset (const char *domainname,
 						const char *codeset);
+
+#ifdef _WIN32
+G_INTL_EXPORT wchar_t *g_libintl_wbindtextdomain (const char *domainname,
+                                                  const wchar_t *wdirname);
+#endif
 
 #ifdef __cplusplus
 }

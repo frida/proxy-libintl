@@ -21,6 +21,7 @@
 #  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
 #else
+#  define _POSIX_C_SOURCE 200809L
 #  include <stddef.h>
 #  if !STUB_ONLY
 #    include <dlfcn.h>

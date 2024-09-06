@@ -75,6 +75,11 @@ static char * (*p_bindtextdomain) (const char *domainname,
 static char * (*p_bind_textdomain_codeset) (const char *domainname,
 					    const char *codeset);
 
+#ifdef _WIN32
+static wchar_t * (*p_wbindtextdomain) (const char *domainname,
+                                       const wchar_t *wdirname);
+#endif
+
 static int
 use_intl_dll (HMODULE dll)
 {
@@ -95,7 +100,10 @@ use_intl_dll (HMODULE dll)
   LOOKUP (textdomain);
   LOOKUP (bindtextdomain);
   LOOKUP (bind_textdomain_codeset);
-  
+#ifdef _WIN32
+  LOOKUP (wbindtextdomain)
+#endif
+
 #undef LOOKUP
 #endif  /* !STUB_ONLY */
   return 1;
@@ -109,6 +117,15 @@ dummy_##fn parlist				\
 {						\
   return (char *) (retval);			\
 }
+
+#ifdef _WIN32
+#define WDUMMY(fn, parlist, retval)		\
+static wchar_t *					\
+dummy_##fn parlist				\
+{						\
+  return (wchar_t *) (retval);			\
+}
+#endif
 
 DUMMY (gettext,
        (const char *msgid),
@@ -176,7 +193,18 @@ DUMMY (bind_textdomain_codeset,
 	const char *codeset),
        codeset)
 
+#ifdef _WIN32
+WDUMMY (wbindtextdomain,
+        (const char *domainname,
+         const wchar_t *dirname),
+        L"/dummy")
+#endif
+
 #undef DUMMY
+
+#ifdef _WIN32
+#undef WDUMMY
+#endif
 
 static void
 use_dummy (void)
@@ -192,7 +220,11 @@ use_dummy (void)
   USE_DUMMY (textdomain);
   USE_DUMMY (bindtextdomain);
   USE_DUMMY (bind_textdomain_codeset);
-  
+
+#ifdef _WIN32
+  USE_DUMMY (wbindtextdomain);
+#endif
+
 #undef USE_DUMMY
 
 }
@@ -205,19 +237,25 @@ setup (void)
   if (!beenhere)
     {
 #if !STUB_ONLY
-#if defined(_WIN64)
-      /* On 64-bit Windows we have let libtool choose the default name
-       * for the DLL, as we don't need the intl.dll name for backward
-       * compatibility
-       */
-      HMODULE intl_dll = LoadLibrary ("libintl-8.dll");
-#  elif defined( _WIN32)
-      HMODULE intl_dll = LoadLibrary ("intl.dll");
-#  elif defined(__APPLE__) && defined(__MACH__)
-      HMODULE intl_dll = dlopen ("libintl.dylib", RTLD_LAZY);
+# if defined(_WIN32)
+#  if !defined (_MSC_VER)
+      HMODULE intl_dll = LoadLibraryW (L"libintl-8.dll");
+#   if defined (_M_IX86)
+      /* Also try without libtool naming scheme for
+       * backward compatibility. That's only needed
+       * on x86 */
+      if (intl_dll == NULL) {
+        intl_dll = LoadLibraryW (L"intl.dll");
+      }
+#   endif
 #  else
-      HMODULE intl_dll = dlopen ("libintl.so", RTLD_LAZY);
+      HMODULE intl_dll = LoadLibraryW (L"intl.dll");
 #  endif
+# elif defined(__APPLE__) && defined(__MACH__)
+      HMODULE intl_dll = dlopen ("libintl.dylib", RTLD_LAZY);
+# else
+      HMODULE intl_dll = dlopen ("libintl.so", RTLD_LAZY);
+# endif
 #else  /* !STUB_ONLY */
       HMODULE intl_dll = NULL;
 #endif  /* STUB_ONLY */
@@ -249,6 +287,16 @@ g_libintl_ ## fn parlist			\
   setup ();					\
   return p_##fn parlist2;			\
 }
+
+#ifdef _WIN32
+#define WIMPLEMENT(fn, parlist, parlist2)	\
+wchar_t *					\
+g_libintl_ ## fn parlist			\
+{						\
+  setup ();					\
+  return p_##fn parlist2;			\
+}
+#endif
 
 IMPLEMENT (gettext,
 	   (const char *msgid),
@@ -300,4 +348,15 @@ IMPLEMENT (bind_textdomain_codeset,
 	    const char *codeset),
 	   (domainname, codeset))
 
+#ifdef _WIN32
+WIMPLEMENT (wbindtextdomain,
+            (const char    *domainname,
+             const wchar_t *wdirname),
+            (domainname, wdirname))
+#endif
+
 #undef IMPLEMENT
+
+#ifdef _WIN32
+#undef WIMPLEMENT
+#endif

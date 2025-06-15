@@ -1,5 +1,6 @@
 project('proxy-libintl', 'c',
   version : '1',
+  license: 'LGPL-2.0-or-later',
   meson_version : '>= 0.48.0',
   default_options : [ 'warning_level=1',
                       'c_std=c99',
